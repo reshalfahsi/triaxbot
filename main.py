@@ -62,7 +62,9 @@ async def api_post(request : Request):
         return {"status": "error", "reason": "empty token"}
 
     bot = telegram.Bot(TELEGRAM_TOKEN)
-    update = telegram.Update.de_json(request.json(), bot)
+    json_data = request.json()
+    print(json_data)
+    update = telegram.Update.de_json(dict(json_data), bot)
     chat_id = update.message.chat.id
 
     update.message.reply_text(update.message.text)
@@ -76,7 +78,9 @@ async def start(request : Request):
         return {"status": "error", "reason": "empty token"}
 
     bot = telegram.Bot(TELEGRAM_TOKEN)
-    update = telegram.Update.de_json(request.json(), bot)
+    json_data = request.json()
+    print(json_data)
+    update = telegram.Update.de_json(dict(json_data), bot)
     chat_id = update.message.chat.id
 
     update.message.reply_text("Just send the audio it will try to transcribe the text based on the audio.")
