@@ -19,7 +19,7 @@ jobs:
       - name: "Deploy to Vercel"
         run: |
              npx vercel --token ${VERCEL_TOKEN} --prod
-             npx vercel --token ${VERCEL_TOKEN} remove vercel-python-action --safe -y
+             npx vercel --token ${VERCEL_TOKEN} remove triaxbot --safe -y
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
