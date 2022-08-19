@@ -62,7 +62,7 @@ async def api_post(request : Request):
         return {"status": "error", "reason": "empty token"}
 
     bot = telegram.Bot(TELEGRAM_TOKEN)
-    json_data = request.json()
+    json_data = await request.json()
     print(json_data)
     update = telegram.Update.de_json(dict(json_data), bot)
     chat_id = update.message.chat.id
@@ -78,7 +78,7 @@ async def start(request : Request):
         return {"status": "error", "reason": "empty token"}
 
     bot = telegram.Bot(TELEGRAM_TOKEN)
-    json_data = request.json()
+    json_data = await request.json()
     print(json_data)
     update = telegram.Update.de_json(dict(json_data), bot)
     chat_id = update.message.chat.id
