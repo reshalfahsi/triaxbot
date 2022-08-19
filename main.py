@@ -11,26 +11,24 @@
 # SOFTWARE.
 #
 # Modified from:
-#    - https://github.com/liuhh02/python-telegram-bot-heroku/blob/master/bot.py
+#    - https://github.com/ohld/python-zeit-serverless-telegram-bot/blob/master/index.py
 # ==============================================================================
 
 
-import logging
 import telegram
 import os
 import requests
 
 
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import (
-    FastAPI,
-    Request
-)
+from fastapi import FastAPI, Request
 
 
 app = FastAPI()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/setWebhook?url=https://triaxbot.vercel.app/api")
+requests.get(
+    f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/setWebhook?url=https://triaxbot.vercel.app/api"
+)
 
 
 @app.get("/")
@@ -56,7 +54,7 @@ async def api_get():
 
 
 @app.post("/api")
-async def api_post(request : Request):
+async def api_post(request: Request):
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
     if TELEGRAM_TOKEN is None:
         return {"status": "error", "reason": "empty token"}
@@ -65,30 +63,21 @@ async def api_post(request : Request):
     json_data = await request.json()
     print(json_data)
     update = telegram.Update.de_json(dict(json_data), bot)
-    chat_id = update.message.chat.id
+
+    if update.message.text == "/start":
+        update.message.reply_text(
+            "Just send the audio it will try to transcribe the text based on the audio."
+        )
+        return {"status": "ok"}
 
     update.message.reply_text(update.message.text)
     return {"status": "ok"}
 
 
-@app.post("/api/start")
-async def start(request : Request):
-    TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-    if TELEGRAM_TOKEN is None:
-        return {"status": "error", "reason": "empty token"}
-
-    bot = telegram.Bot(TELEGRAM_TOKEN)
-    json_data = await request.json()
-    print(json_data)
-    update = telegram.Update.de_json(dict(json_data), bot)
-    chat_id = update.message.chat.id
-
-    update.message.reply_text("Just send the audio it will try to transcribe the text based on the audio.")
-    return {"status": "ok"}
-
-
-app.add_middleware(CORSMiddleware,
-                   allow_origins=["*"],
-                   allow_credentials=True,
-                   allow_methods=["*"],
-                   allow_headers=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
