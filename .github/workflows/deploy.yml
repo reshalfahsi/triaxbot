@@ -1,0 +1,25 @@
+# From: https://github.com/raiyanyahya/vercel-python-action/blob/master/.github/workflows/deploy.yml
+
+
+name: deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy: 
+    runs-on: ubuntu-latest
+    name: "Deploy python function to vercel"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '16'
+          registry-url: https://registry.npmjs.org/
+      - name: "Deploy to Vercel"
+        run: |
+             npx vercel --token ${VERCEL_TOKEN} --prod
+             npx vercel --token ${VERCEL_TOKEN} remove vercel-python-action --safe -y
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
