@@ -30,15 +30,17 @@ from fastapi import (
 
 app = FastAPI()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-res = requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/setWebhook?url=https://triaxbot.vercel.app/api")
+requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/setWebhook?url=https://triaxbot.vercel.app/api")
 
 
 @app.get("/")
 async def index():
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
     if TELEGRAM_TOKEN is None:
-        return {"status": "error", "reason": "empty token"})
+        return {"status": "error", "reason": "empty token"}
+
     bot = telegram.Bot(TELEGRAM_TOKEN)
+
     return str(bot.get_me())
 
 
@@ -46,14 +48,19 @@ async def index():
 async def api_get():
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
     if TELEGRAM_TOKEN is None:
-        return {"status": "error", "reason": "empty token"})
+        return {"status": "error", "reason": "empty token"}
+
     bot = telegram.Bot(TELEGRAM_TOKEN)
+
     return str(bot.get_me())
 
 
 @app.post("/api")
 async def api_post(request : Request):
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+    if TELEGRAM_TOKEN is None:
+        return {"status": "error", "reason": "empty token"}
+
     bot = telegram.Bot(TELEGRAM_TOKEN)
     update = telegram.Update.de_json(request.json(), bot)
     chat_id = update.message.chat.id
@@ -65,6 +72,9 @@ async def api_post(request : Request):
 @app.post("/api/start")
 async def start(request : Request):
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+    if TELEGRAM_TOKEN is None:
+        return {"status": "error", "reason": "empty token"}
+
     bot = telegram.Bot(TELEGRAM_TOKEN)
     update = telegram.Update.de_json(request.json(), bot)
     chat_id = update.message.chat.id
