@@ -18,11 +18,17 @@
 import telegram
 import os
 import requests
+import uuid
 
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Request
 
+
+from triaxbot import TriAXBot
+
+
+bot = TriAXBot()
 
 app = FastAPI()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -37,9 +43,9 @@ async def index():
     if TELEGRAM_TOKEN is None:
         return {"status": "error", "reason": "empty token"}
 
-    bot = telegram.Bot(TELEGRAM_TOKEN)
+    tbot = telegram.Bot(TELEGRAM_TOKEN)
 
-    return str(bot.get_me())
+    return str(tbot.get_me())
 
 
 @app.get("/api")
@@ -48,9 +54,9 @@ async def api_get():
     if TELEGRAM_TOKEN is None:
         return {"status": "error", "reason": "empty token"}
 
-    bot = telegram.Bot(TELEGRAM_TOKEN)
+    tbot = telegram.Bot(TELEGRAM_TOKEN)
 
-    return str(bot.get_me())
+    return str(tbot.get_me())
 
 
 @app.post("/api")
@@ -59,18 +65,33 @@ async def api_post(request: Request):
     if TELEGRAM_TOKEN is None:
         return {"status": "error", "reason": "empty token"}
 
-    bot = telegram.Bot(TELEGRAM_TOKEN)
+    tbot = telegram.Bot(TELEGRAM_TOKEN)
     json_data = await request.json()
     print(json_data)
-    update = telegram.Update.de_json(dict(json_data), bot)
+    update = telegram.Update.de_json(dict(json_data), tbot)
 
-    if update.message.text == "/start":
-        update.message.reply_text(
-            "Just send the audio it will try to transcribe the text based on the audio."
-        )
-        return {"status": "ok"}
+    try:
+        if update.message.text == "/start":
+            update.message.reply_text(
+                "Just send the audio it will try to transcribe the text based on the audio."
+            )
+            return {"status": "ok"}
+    except Exception as e:
+        print("Not the desired text! Detail: {}".format(e))
 
-    update.message.reply_text(update.message.text)
+    try:
+        file_id = update.message.voice.file_id
+        audio_file = tbot.get_file(file_id)
+        file_id = str(uuid.uuid4())
+        filename = f"voice-{file_id}.ogg"
+        audio_file.download(filename)
+
+        update.message.reply_text(bot.transcribe(filename))
+
+        os.remove(filename)
+    except Exception as e:
+        print("Can not process audio data! Detail: {}".format(e))
+
     return {"status": "ok"}
 
 
