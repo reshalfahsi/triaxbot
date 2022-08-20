@@ -95,4 +95,6 @@ class TriAXBot(object):
             if idx == END_TOKENID:
                 break
 
-        return prediction.replace(START_TOKENID, "").replace(END_TOKENID, "")
+        return prediction.replace(idx_to_char[START_TOKENID], "").replace(
+            idx_to_char[END_TOKENID], ""
+        )
