@@ -65,7 +65,7 @@ class TriAXBot(object):
             torch.load("triaxbot.pth", map_location=torch.device("cpu"))
         )
 
-    def transcribe(filename: str):
+    def transcribe(self, filename: str):
         audio = torchaudio.load(filename)[0]
         audio = torch.view_as_real(
             torch.stft(
