@@ -15,3 +15,7 @@ To train the designated model, use following command.
 ```bash
 python3 train.py
 ```
+
+## How to Deploy
+
+Read [this](https://remarkablemark.org/blog/2021/03/12/github-actions-deploy-to-heroku/)!

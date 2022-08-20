@@ -11,94 +11,93 @@
 # SOFTWARE.
 #
 # Modified from:
-#    - https://github.com/ohld/python-zeit-serverless-telegram-bot/blob/master/index.py
+#    - https://github.com/liuhh02/python-telegram-bot-heroku/blob/master/bot.py
 # ==============================================================================
 
 
-import telegram
+import logging
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import os
-import requests
 import uuid
-
-
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, Request
-
 
 from triaxbot import TriAXBot
 
 
 bot = TriAXBot()
 
-app = FastAPI()
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-requests.get(
-    f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/setWebhook?url=https://triaxbot.vercel.app/api"
+
+# Enable logging
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 
-
-@app.get("/")
-async def index():
-    TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-    if TELEGRAM_TOKEN is None:
-        return {"status": "error", "reason": "empty token"}
-
-    tbot = telegram.Bot(TELEGRAM_TOKEN)
-
-    return str(tbot.get_me())
+logger = logging.getLogger(__name__)
 
 
-@app.get("/api")
-async def api_get():
-    TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-    if TELEGRAM_TOKEN is None:
-        return {"status": "error", "reason": "empty token"}
-
-    tbot = telegram.Bot(TELEGRAM_TOKEN)
-
-    return str(tbot.get_me())
+# Define a few command handlers. These usually take the two arguments update and
+# context. Error handlers also receive the raised TelegramError object in error.
+def start(update, context):
+    """Send a message when the command /start is issued."""
+    update.message.reply_text("A simple bot that transcribe audio to text.")
 
 
-@app.post("/api")
-async def api_post(request: Request):
-    TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-    if TELEGRAM_TOKEN is None:
-        return {"status": "error", "reason": "empty token"}
-
-    tbot = telegram.Bot(TELEGRAM_TOKEN)
-    json_data = await request.json()
-    print(json_data)
-    update = telegram.Update.de_json(dict(json_data), tbot)
-
-    try:
-        if update.message.text == "/start":
-            update.message.reply_text(
-                "Just send the audio it will try to transcribe the text based on the audio."
-            )
-            return {"status": "ok"}
-    except Exception as e:
-        print("Not the desired text! Detail: {}".format(e))
-
-    try:
-        file_id = update.message.voice.file_id
-        audio_file = tbot.get_file(file_id)
-        file_id = str(uuid.uuid4())
-        filename = f"voice-{file_id}.ogg"
-        audio_file.download(filename)
-
-        update.message.reply_text(bot.transcribe(filename))
-
-        os.remove(filename)
-    except Exception as e:
-        print("Can not process audio data! Detail: {}".format(e))
-
-    return {"status": "ok"}
+def help(update, context):
+    """Send a message when the command /help is issued."""
+    update.message.reply_text(
+        "Just send the audio it will try to transcribe the text based on the audio."
+    )
 
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+def reply(update, context):
+    """Reply the user message."""
+    file_id = update.message.voice.file_id
+    audio_file = tbot.get_file(file_id)
+    file_id = str(uuid.uuid4())
+    filename = f"voice-{file_id}.ogg"
+    audio_file.download(filename)
+
+    update.message.reply_text(bot.transcribe(filename))
+
+    os.remove(filename)
+
+
+def error(update, context):
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, context.error)
+
+
+def main():
+    """Start the bot."""
+    # Create the Updater and pass it your bot's token.
+    # Make sure to set use_context=True to use the new context based callbacks
+    # Post version 12 this will no longer be necessary
+
+    PORT = int(os.environ.get("PORT", "5000"))
+    TOKEN = os.environ.get("TOKEN")
+
+    updater = Updater(TOKEN, use_context=True)
+
+    # Get the dispatcher to register handlers
+    dp = updater.dispatcher
+
+    # on different commands - answer in Telegram
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("help", help))
+
+    # on noncommand i.e message - echo the message on Telegram
+    dp.add_handler(MessageHandler(Filters.voice, reply))
+
+    # log all errors
+    dp.add_error_handler(error)
+
+    # Start the Bot
+    updater.start_webhook(
+        listen="0.0.0.0",
+        port=int(PORT),
+        url_path=TOKEN,
+        webhook_url="https://triaxbot.herokuapp.com/" + TOKEN,
+    )
+
+
+if __name__ == "__main__":
+    main()
