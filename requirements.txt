@@ -1,5 +1,6 @@
 python-telegram-bot==13.8.1
 PyYAML
+numpy
 https://download.pytorch.org/whl/cpu/torch-1.12.1%2Bcpu-cp310-cp310-linux_x86_64.whl
 https://download.pytorch.org/whl/cpu/torchaudio-0.12.1%2Bcpu-cp310-cp310-linux_x86_64.whl
 dtrx
