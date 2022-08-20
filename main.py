@@ -50,8 +50,7 @@ def help(update, context):
 
 def reply(update, context):
     """Reply the user message."""
-    file_id = update.message.voice.file_id
-    audio_file = tbot.get_file(file_id)
+    audio_file = update.message.voice.get_file()
     file_id = str(uuid.uuid4())
     filename = f"voice-{file_id}.ogg"
     audio_file.download(filename)
