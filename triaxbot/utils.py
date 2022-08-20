@@ -19,6 +19,7 @@ import torch
 import torch.nn as nn
 import torchaudio
 import numpy as np
+import torch.utils.data as data
 
 from .constant import N_FFT, HOP_LENGTH, WIN_LENGTH, MAX_SEQ_T
 
