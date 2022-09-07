@@ -42,6 +42,18 @@ from triaxbot.constant import (
 )
 
 
+def listdir(dirpath):
+    """lists directories and sub-directories recursively. 
+    """
+    paths=[]
+    paths.append(dirpath)
+    for path in os.listdir(dirpath):
+        rpath = os.path.join(dirpath, path)
+        if os.path.isdir(rpath):
+            paths.append(rpath)
+    return paths
+
+
 def prepare():
     dataset_name = "LJSpeech-1.1"
     raw_dataset = os.path.join(os.getcwd(), "{}.tar.bz2".format(dataset_name))
