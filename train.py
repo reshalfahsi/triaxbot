@@ -26,7 +26,7 @@ import shutil
 from datetime import datetime
 
 from triaxbot import Transformer
-from triaxbot.utils import AvgMeter
+from triaxbot.utils import AvgMeter, get_data
 from triaxbot.constant import (
     MAX_LEN,
     EMBED_DIM,
